@@ -3,29 +3,40 @@
 import { ReactNode } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { redirect } from "next/navigation";
 import { Github, Mail } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
   const { data: session } = authClient.useSession();
-  if (session?.user.name) {
-    return (
-      <>
-        <div className="flex flex-col gap-y-4 p-5">
-          <p className="font-bold text-2xl mx-auto">
-            Logged in as {session.user.name}
-          </p>
-          <Button
-            onClick={() => {
-              authClient.signOut();
-            }}
-          >
-            Sign Out
-          </Button>
-        </div>
-      </>
-    );
+  if (session) {
+    redirect("/");
   }
+  const signFromGithub = () => {
+    authClient.signIn.social(
+      {
+        provider: "github",
+      },
+      {
+        onError: () => {
+          window.alert("Failed Try Manually or Later");
+        },
+      }
+    );
+  };
+  const signFromGoogle = () => {
+    authClient.signIn.social(
+      {
+        provider: "google",
+      },
+      {
+        onError: () => {
+          window.alert("Failed Try Manually or Later");
+        },
+      }
+    );
+  };
+
   return (
     <div className="flex justify-center min-h-screen items-center">
       <Card className="w-full max-w-md shadow-lg">
@@ -45,10 +56,18 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
 
           {/* Shared socials */}
           <div className="grid grid-cols-2 gap-3">
-            <Button variant="outline" className="w-full">
+            <Button
+              onClick={signFromGithub}
+              variant="outline"
+              className="w-full"
+            >
               <Github className="w-4 h-4 mr-2" /> GitHub
             </Button>
-            <Button variant="outline" className="w-full">
+            <Button
+              onClick={signFromGoogle}
+              variant="outline"
+              className="w-full"
+            >
               <Mail className="w-4 h-4 mr-2" /> Google
             </Button>
           </div>
